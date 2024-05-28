@@ -7,7 +7,7 @@
 </p>
 
 ## Quick Start
-
+ 
 In order to start using AIDB, all you need to do is install the requirements, specify a configuration, and query!
 Setting up on the environment is as simple as
 ```bash
