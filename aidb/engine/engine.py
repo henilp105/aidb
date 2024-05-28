@@ -6,39 +6,56 @@ from aidb.utils.asyncio import asyncio_run
 from aidb.query.query import Query
 
 
-class Engine(LimitEngine, NonSelectQueryEngine, ApproxSelectEngine, ApproximateAggregateJoinEngine):
-  def execute(self, query: str, **kwargs):
-    '''
-    Executes a query and returns the results.
-    '''
-    try:
-      parsed_query = Query(query, self._config)
-      all_queries = parsed_query.all_queries_in_expressions
-      # FIXME: We have many validity checks for different queries.
-      #     It's better to put them together and check the validity first.
-      # check validity of user defined function query
+class Engine(
+    LimitEngine,
+    NonSelectQueryEngine,
+    ApproxSelectEngine,
+    ApproximateAggregateJoinEngine,
+):
+    def execute(self, query: str, **kwargs):
+        """
+        Executes a query and returns the results.
+        """
+        try:
+            parsed_query = Query(query, self._config)
+            all_queries = parsed_query.all_queries_in_expressions
+            # FIXME: We have many validity checks for different queries.
+            #     It's better to put them together and check the validity first.
+            # check validity of user defined function query
 
-      if parsed_query.is_udf_query:
-        parsed_query.check_udf_query_validity()
-      result = None
+            if parsed_query.is_udf_query:
+                parsed_query.check_udf_query_validity()
+            result = None
 
-      for parsed_single_query, _ in all_queries:
-        if parsed_single_query.is_approx_agg_query:
-          if parsed_single_query.is_aqp_join_query:
-            result = asyncio_run(self.execute_aggregate_join_query(parsed_single_query, **kwargs))
-          else:
-            result = asyncio_run(self.execute_aggregate_query(parsed_single_query, **kwargs))
-        elif parsed_single_query.is_approx_select_query:
-          result = asyncio_run(self.execute_approx_select_query(parsed_single_query, **kwargs))
-        elif parsed_single_query.is_limit_query():
-          result = asyncio_run(self._execute_limit_query(parsed_single_query, **kwargs))
-        elif parsed_single_query.is_select_query():
-          result = asyncio_run(self.execute_full_scan(parsed_single_query, **kwargs))
-        else:
-          result = asyncio_run(self.execute_non_select(parsed_single_query))
+            for parsed_single_query, _ in all_queries:
+                if parsed_single_query.is_approx_agg_query:
+                    if parsed_single_query.is_aqp_join_query:
+                        result = asyncio_run(
+                            self.execute_aggregate_join_query(
+                                parsed_single_query, **kwargs
+                            )
+                        )
+                    else:
+                        result = asyncio_run(
+                            self.execute_aggregate_query(parsed_single_query, **kwargs)
+                        )
+                elif parsed_single_query.is_approx_select_query:
+                    result = asyncio_run(
+                        self.execute_approx_select_query(parsed_single_query, **kwargs)
+                    )
+                elif parsed_single_query.is_limit_query():
+                    result = asyncio_run(
+                        self._execute_limit_query(parsed_single_query, **kwargs)
+                    )
+                elif parsed_single_query.is_select_query():
+                    result = asyncio_run(
+                        self.execute_full_scan(parsed_single_query, **kwargs)
+                    )
+                else:
+                    result = asyncio_run(self.execute_non_select(parsed_single_query))
 
-      return result
-    except Exception as e:
-      raise e
-    finally:
-      self.__del__()
+            return result
+        except Exception as e:
+            raise e
+        finally:
+            self.__del__()

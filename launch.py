@@ -11,26 +11,28 @@ from aidb.utils.asyncio import asyncio_run
 
 
 def setup_blob_tables(config):
-  input_blobs = pd.read_csv(config.blobs_csv_file)
-  base_table_setup = BaseTablesSetup(f"{config.DB_URL}/{config.DB_NAME}")
-  base_table_setup.insert_blob_meta_data(config.blob_table_name, input_blobs, config.blobs_keys_columns)
+    input_blobs = pd.read_csv(config.blobs_csv_file)
+    base_table_setup = BaseTablesSetup(f"{config.DB_URL}/{config.DB_NAME}")
+    base_table_setup.insert_blob_meta_data(
+        config.blob_table_name, input_blobs, config.blobs_keys_columns
+    )
 
 
-if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
-  parser.add_argument("--config", type=str)
-  parser.add_argument("--setup-blob-table", action='store_true')
-  parser.add_argument("--setup-output-tables", action='store_true')
-  parser.add_argument("--verbose", action='store_true')
-  args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=str)
+    parser.add_argument("--setup-blob-table", action="store_true")
+    parser.add_argument("--setup-output-tables", action="store_true")
+    parser.add_argument("--verbose", action="store_true")
+    args = parser.parse_args()
 
-  config = importlib.import_module(args.config)
+    config = importlib.import_module(args.config)
 
-  if args.setup_blob_table:
-    setup_blob_tables(config)
+    if args.setup_blob_table:
+        setup_blob_tables(config)
 
-  if args.setup_output_tables:
-    asyncio_run(create_output_tables(config.DB_URL, config.DB_NAME, config.tables))
+    if args.setup_output_tables:
+        asyncio_run(create_output_tables(config.DB_URL, config.DB_NAME, config.tables))
 
-  aidb_engine = AIDB.from_config(args.config, args.verbose)
-  command_line_utility(aidb_engine)
+    aidb_engine = AIDB.from_config(args.config, args.verbose)
+    command_line_utility(aidb_engine)

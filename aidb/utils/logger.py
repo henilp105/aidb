@@ -1,4 +1,4 @@
 import logging
 
 logging.basicConfig()
-logger = logging.getLogger('aidb')
+logger = logging.getLogger("aidb")
